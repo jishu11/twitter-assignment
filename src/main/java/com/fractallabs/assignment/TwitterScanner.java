@@ -83,32 +83,30 @@ public class TwitterScanner {
             TwitterScanner.TSValue tsValue = new TwitterScanner.TSValue(java.time.Instant.now(), Double.valueOf(sum[0]));
             storeValue(tsValue);
             sum[0] = 0;
-        }, 0, 1, TimeUnit.MINUTES);
+        }, 0, 5, TimeUnit.SECONDS);
     }
 
     private void storeValue(TSValue value) {
         tsValuesList.add(value);
         double percentage;
         int index = tsValuesList.size();
-        double originalMentions = tsValuesList.get(index - 2).getVal();
-        double currentMentions = tsValuesList.get(index - 1).getVal();
         if(tsValuesList.size() > 1) {
-            System.out.println("Old mentions: " + originalMentions + "-----" + tsValuesList.get(index - 2).timestamp);
-            System.out.println("New mentions: " + currentMentions + "-----" + tsValuesList.get(index - 1).timestamp);
+            System.out.println("Old mentions: " + tsValuesList.get(index - 2).val + "-----" + tsValuesList.get(index - 2).timestamp);
+            System.out.println("New mentions: " + tsValuesList.get(index - 1).val + "-----" + tsValuesList.get(index - 1).timestamp);
 
-            if(currentMentions > originalMentions && originalMentions == 0) {
+            if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val && tsValuesList.get(index - 2).val == 0) {
                 System.out.println("Initial increase....");
             }
-            else if(currentMentions > originalMentions) {
-                double increase = (currentMentions - originalMentions);
+            else if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val) {
+                double increase = (tsValuesList.get(index - 1).val - tsValuesList.get(index - 2).val);
                 percentage = (increase * 100) / tsValuesList.get(index - 2 ).val;
                 System.out.println("Increased by " + new DecimalFormat("#.00").format(percentage) + "%");
             }
-            else if(currentMentions == originalMentions) {
+            else if(tsValuesList.get(index - 1).val == tsValuesList.get(index - 2).val) {
                 System.out.println("No change!!!");
             }
             else {
-                double decrease = (originalMentions - currentMentions);
+                double decrease = (tsValuesList.get(index - 2).val - tsValuesList.get(index - 1).val);
                 percentage = (decrease * 100) / tsValuesList.get(index - 2 ).val;
                 System.out.println("Decreased by " + new DecimalFormat("#.00").format(percentage) + "%");
             }
