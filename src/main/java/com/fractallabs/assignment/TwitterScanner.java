@@ -10,6 +10,9 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class TwitterScanner {
 
@@ -52,19 +55,14 @@ public class TwitterScanner {
             public void onStatus(Status status) {
                 if (status.getText().contains(companyName)) sum[0] = sum[0] + StringUtils.countMatches(status.getText().toLowerCase(), companyName.toLowerCase());
             }
-
             @Override
             public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {}
-
             @Override
             public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
-
             @Override
             public void onScrubGeo(long userId, long upToStatusId) {}
-
             @Override
             public void onStallWarning(StallWarning warning) {}
-
             @Override
             public void onException(Exception ex) {
                 ex.printStackTrace();
@@ -88,7 +86,6 @@ public class TwitterScanner {
 
     private void storeValue(TSValue value) {
         tsValuesList.add(value);
-        double percentage;
         int index = tsValuesList.size();
         if(tsValuesList.size() > 1) {
             System.out.println("Old mentions: " + tsValuesList.get(index - 2).val + "-----" + tsValuesList.get(index - 2).timestamp);
@@ -97,21 +94,23 @@ public class TwitterScanner {
             if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val && tsValuesList.get(index - 2).val == 0) {
                 System.out.println("Initial increase....");
             }
-            else if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val) {
-                double increase = (tsValuesList.get(index - 1).val - tsValuesList.get(index - 2).val);
-                percentage = (increase * 100) / tsValuesList.get(index - 2 ).val;
-                System.out.println("Increased by " + new DecimalFormat("#.00").format(percentage) + "%");
-            }
             else if(tsValuesList.get(index - 1).val == tsValuesList.get(index - 2).val) {
                 System.out.println("No change!!!");
             }
+            else if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val) {
+                System.out.println("Increased by " + convertDecimal.apply(percentageCal.apply
+                        (difference.apply(tsValuesList.get(index - 1).val, tsValuesList.get(index - 2).val), tsValuesList.get(index - 2 ).val)));
+            }
             else {
-                double decrease = (tsValuesList.get(index - 2).val - tsValuesList.get(index - 1).val);
-                percentage = (decrease * 100) / tsValuesList.get(index - 2 ).val;
-                System.out.println("Decreased by " + new DecimalFormat("#.00").format(percentage) + "%");
+                System.out.println("Decreased by " + convertDecimal.apply(percentageCal.apply
+                        (difference.apply(tsValuesList.get(index - 2).val, tsValuesList.get(index - 1).val), tsValuesList.get(index - 2 ).val)));
             }
         }
     }
+
+    BiFunction<Double, Double, Double> difference = (value1, value2) -> value1 - value2;
+    Function<Double, String> convertDecimal = value -> new DecimalFormat("#.00").format(value).toString() + "%";
+    BiFunction<Double, Double, Double> percentageCal = (value, original) -> value * 100 / original;
 
     public static void main(String ... args) {
         TwitterScanner scanner = new TwitterScanner("London");
