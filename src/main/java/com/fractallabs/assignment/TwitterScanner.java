@@ -79,7 +79,7 @@ public class TwitterScanner {
             TwitterScanner.TSValue tsValue = new TwitterScanner.TSValue(java.time.Instant.now(), Double.valueOf(sum[0]));
             storeValue(tsValue);
             sum[0] = 0;
-        }, 0, 1, TimeUnit.HOURS);
+        }, 0, 5, TimeUnit.SECONDS);
     }
 
     private void storeValue(TSValue value) {
@@ -89,14 +89,11 @@ public class TwitterScanner {
             System.out.println("Old mentions >>>> " + tsValuesList.get(index - 2).val + " --------- " + tsValuesList.get(index - 2).timestamp);
             System.out.println("New mentions >>>> " + tsValuesList.get(index - 1).val + " --------- " + tsValuesList.get(index - 1).timestamp);
 
-            if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val && tsValuesList.get(index - 2).val == 0) {
+            if(tsValuesList.get(0).val == 0 && index == 2) {
                 System.out.println("Initial increase....");
             }
             else if(tsValuesList.get(index - 1).val == tsValuesList.get(index - 2).val) {
                 System.out.println("No change!!!");
-            }
-            else if(tsValuesList.get(index - 1).val > tsValuesList.get(index - 2).val) {
-                performAction.accept(tsValuesList.get(index - 1).val, tsValuesList.get(index - 2).val);
             }
             else {
                 performAction.accept(tsValuesList.get(index - 1).val, tsValuesList.get(index - 2).val);
@@ -108,9 +105,9 @@ public class TwitterScanner {
     Function<Double, String> convertDecimal = value -> new DecimalFormat("#.00").format(value).toString() + "%";
     BiFunction<Double, Double, Double> percentageCal = (value, original) -> value * 100 / original;
     BiFunction<Double, Double, String> status = (value1, value2) -> (value1 > value2) ? "Increased by --- " : "Decreased by --- ";
-    BiConsumer<Double, Double> performAction = this::accept;
+    BiConsumer<Double, Double> performAction = this::check;
 
-    private void accept(Double newMention, Double originalMention) {
+    protected void check(Double newMention, Double originalMention) {
         System.out.println(
                 status.apply(newMention, originalMention) +
                         convertDecimal.apply(
