@@ -79,7 +79,7 @@ public class TwitterScanner {
             TwitterScanner.TSValue tsValue = new TwitterScanner.TSValue(java.time.Instant.now(), Double.valueOf(sum[0]));
             storeValue(tsValue);
             sum[0] = 0;
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.HOURS); //Change the value to the desired period
     }
 
     private void storeValue(TSValue value) {
