@@ -105,7 +105,7 @@ public class TwitterScanner {
     Function<Double, String> convertDecimal = value -> new DecimalFormat("#.00").format(value).toString() + "%";
     BiFunction<Double, Double, Double> percentageCal = (value, original) -> value * 100 / original;
     BiFunction<Double, Double, String> status = (value1, value2) -> (value1 > value2) ? "Increased by --- " : "Decreased by --- ";
-    BiConsumer<Double, Double> performAction = this::check;
+    protected BiConsumer<Double, Double> performAction = this::check;
 
     protected void check(Double newMention, Double originalMention) {
         System.out.println(
